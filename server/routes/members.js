@@ -3,14 +3,16 @@ const router = express.Router();
 const { body, validationResult } = require('express-validator');
 const Member = require('../models/Member');
 const auth = require('../middleware/auth');
+const { checkRoles } = require('../middleware/checkRole');
 
 // @route   GET /api/members
-// @desc    Get all members with filtering
+// @desc    Get all members (with filtering options)
 // @access  Private
 router.get('/', auth, async (req, res) => {
   try {
     const { academicYear, hasPaid, status, search } = req.query;
     
+    // Build query
     let query = {};
     
     if (academicYear) {
@@ -25,6 +27,7 @@ router.get('/', auth, async (req, res) => {
       query.status = status;
     }
     
+    // Search by name or student ID
     if (search) {
       query.$or = [
         { firstName: { $regex: search, $options: 'i' } },
@@ -36,44 +39,6 @@ router.get('/', auth, async (req, res) => {
     const members = await Member.find(query).sort({ registrationDate: -1 });
     
     res.json(members);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Server error' });
-  }
-});
-
-// @route   GET /api/members/stats/summary
-// @desc    Get statistics summary
-// @access  Private
-router.get('/stats/summary', auth, async (req, res) => {
-  try {
-    const { academicYear } = req.query;
-    
-    let query = {};
-    if (academicYear) {
-      query.academicYear = academicYear;
-    }
-
-    const totalMembers = await Member.countDocuments(query);
-    const paidMembers = await Member.countDocuments({ ...query, hasPaid: true });
-    const unpaidMembers = await Member.countDocuments({ ...query, hasPaid: false });
-    const officialMembers = await Member.countDocuments({ ...query, status: 'Official Member' });
-    const pendingMembers = await Member.countDocuments({ ...query, status: 'Pending' });
-
-    const revenueResult = await Member.aggregate([
-      { $match: query },
-      { $group: { _id: null, total: { $sum: '$amountPaid' } } }
-    ]);
-    const totalRevenue = revenueResult.length > 0 ? revenueResult[0].total : 0;
-
-    res.json({
-      totalMembers,
-      paidMembers,
-      unpaidMembers,
-      officialMembers,
-      pendingMembers,
-      totalRevenue
-    });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Server error' });
@@ -100,11 +65,12 @@ router.get('/:id', auth, async (req, res) => {
 
 // @route   POST /api/members
 // @desc    Add a new member
-// @access  Private
+// @access  Admin, Secretary only
 router.post(
   '/',
   [
     auth,
+    checkRoles('Admin', 'Secretary'),
     body('studentId').notEmpty().withMessage('Student ID is required'),
     body('firstName').notEmpty().withMessage('First name is required'),
     body('lastName').notEmpty().withMessage('Last name is required'),
@@ -115,6 +81,7 @@ router.post(
   ],
   async (req, res) => {
     try {
+      // Validate input
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
         return res.status(400).json({ errors: errors.array() });
@@ -122,11 +89,13 @@ router.post(
 
       const { studentId, firstName, lastName, email, phoneNumber, course, yearLevel, academicYear } = req.body;
 
+      // Check if student ID already exists
       let existingMember = await Member.findOne({ studentId });
       if (existingMember) {
         return res.status(400).json({ message: 'Student ID already exists' });
       }
 
+      // Create new member
       const member = new Member({
         studentId,
         firstName,
@@ -150,8 +119,8 @@ router.post(
 
 // @route   PUT /api/members/:id
 // @desc    Update member details
-// @access  Private
-router.put('/:id', auth, async (req, res) => {
+// @access  Admin, Secretary only
+router.put('/:id', auth, checkRoles('Admin', 'Secretary'), async (req, res) => {
   try {
     const { firstName, lastName, email, phoneNumber, course, yearLevel, academicYear, remarks } = req.body;
 
@@ -161,6 +130,7 @@ router.put('/:id', auth, async (req, res) => {
       return res.status(404).json({ message: 'Member not found' });
     }
 
+    // Update fields
     if (firstName) member.firstName = firstName;
     if (lastName) member.lastName = lastName;
     if (email) member.email = email;
@@ -192,6 +162,7 @@ router.put('/:id/payment', auth, async (req, res) => {
       return res.status(404).json({ message: 'Member not found' });
     }
 
+    // Update payment info
     member.hasPaid = hasPaid;
     if (hasPaid) {
       member.amountPaid = amountPaid || 0;
@@ -214,8 +185,8 @@ router.put('/:id/payment', auth, async (req, res) => {
 
 // @route   PUT /api/members/:id/status
 // @desc    Update member status
-// @access  Private
-router.put('/:id/status', auth, async (req, res) => {
+// @access  Admin, Secretary only
+router.put('/:id/status', auth, checkRoles('Admin', 'Secretary'), async (req, res) => {
   try {
     const { status } = req.body;
 
@@ -241,8 +212,8 @@ router.put('/:id/status', auth, async (req, res) => {
 
 // @route   DELETE /api/members/:id
 // @desc    Delete a member
-// @access  Private
-router.delete('/:id', auth, async (req, res) => {
+// @access  Admin only
+router.delete('/:id', auth, checkRoles('Admin'), async (req, res) => {
   try {
     const member = await Member.findById(req.params.id);
     
@@ -253,6 +224,45 @@ router.delete('/:id', auth, async (req, res) => {
     await Member.findByIdAndDelete(req.params.id);
 
     res.json({ message: 'Member deleted successfully' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// @route   GET /api/members/stats/summary
+// @desc    Get statistics summary
+// @access  Private
+router.get('/stats/summary', auth, async (req, res) => {
+  try {
+    const { academicYear } = req.query;
+    
+    let query = {};
+    if (academicYear) {
+      query.academicYear = academicYear;
+    }
+
+    const totalMembers = await Member.countDocuments(query);
+    const paidMembers = await Member.countDocuments({ ...query, hasPaid: true });
+    const unpaidMembers = await Member.countDocuments({ ...query, hasPaid: false });
+    const officialMembers = await Member.countDocuments({ ...query, status: 'Official Member' });
+    const pendingMembers = await Member.countDocuments({ ...query, status: 'Pending' });
+
+    // Calculate total revenue
+    const revenueResult = await Member.aggregate([
+      { $match: query },
+      { $group: { _id: null, total: { $sum: '$amountPaid' } } }
+    ]);
+    const totalRevenue = revenueResult.length > 0 ? revenueResult[0].total : 0;
+
+    res.json({
+      totalMembers,
+      paidMembers,
+      unpaidMembers,
+      officialMembers,
+      pendingMembers,
+      totalRevenue
+    });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Server error' });
