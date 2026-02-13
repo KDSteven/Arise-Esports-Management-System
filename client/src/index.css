@@ -803,3 +803,37 @@ body {
     text-align: left;
   }
 }
+/* Add this to your client/src/index.css file */
+
+/* Warning button for deactivate */
+.btn-warning {
+  background: #feca57;
+  color: #2d3436;
+}
+
+.btn-warning:hover {
+  background: #fdcb6e;
+}
+
+/* Officers page specific styles */
+.officers-page .actions {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+/* Icon buttons */
+.btn-sm svg {
+  font-size: 14px;
+}
+
+/* Table responsive improvements */
+@media (max-width: 768px) {
+  .actions {
+    justify-content: center;
+  }
+  
+  .actions .btn-sm {
+    padding: 8px 10px;
+  }
+}

@@ -4,6 +4,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
   faChartLine, 
   faUsers, 
+  faUserTie,
   faRightFromBracket,
   faChevronLeft,
   faChevronRight
@@ -20,18 +21,31 @@ const Sidebar = () => {
     {
       path: '/',
       icon: faChartLine,
-      label: 'Dashboard'
+      label: 'Dashboard',
+      roles: ['Admin', 'President', 'Treasurer', 'Secretary', 'Auditor']
     },
     {
       path: '/members',
       icon: faUsers,
-      label: 'Members'
+      label: 'Members',
+      roles: ['Admin', 'President', 'Treasurer', 'Secretary', 'Auditor']
+    },
+    {
+      path: '/officers',
+      icon: faUserTie,
+      label: 'Officers',
+      roles: ['Admin'] // Only Admin can see this
     }
   ];
 
   const isActive = (path) => {
     return location.pathname === path;
   };
+
+  // Filter menu items based on user role
+  const visibleMenuItems = menuItems.filter(item => 
+    item.roles.includes(user?.role)
+  );
 
   return (
     <div className={`sidebar ${isCollapsed ? 'collapsed' : ''}`}>
@@ -53,7 +67,7 @@ const Sidebar = () => {
       </button>
 
       <nav className="sidebar-nav">
-        {menuItems.map((item) => (
+        {visibleMenuItems.map((item) => (
           <Link
             key={item.path}
             to={item.path}
