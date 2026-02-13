@@ -19,9 +19,13 @@ const userSchema = new mongoose.Schema({
   },
   role: {
     type: String,
-    enum: ['President', 'Treasurer', 'Secretary', 'Auditor'],
+    enum: ['Admin', 'President', 'Treasurer', 'Secretary', 'Auditor'],
     required: true
   },
+  isActive: {
+    type: Boolean,
+    default: true
+  }, 
   createdAt: {
     type: Date,
     default: Date.now
