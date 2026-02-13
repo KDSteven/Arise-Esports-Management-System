@@ -7,6 +7,7 @@ import PrivateRoute from './components/PrivateRoute';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import Members from './pages/Members';
+import Officers from './pages/Officers';
 import './App.css';
 
 // Layout wrapper component
@@ -54,6 +55,14 @@ function App() {
               element={
                 <PrivateRoute>
                   <Members />
+                </PrivateRoute>
+              } 
+            />
+            <Route 
+              path="/officers" 
+              element={
+                <PrivateRoute>
+                  <Officers />
                 </PrivateRoute>
               } 
             />
