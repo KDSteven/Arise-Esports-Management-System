@@ -3,7 +3,15 @@ import axios from "axios";
 import { AuthContext } from "../context/AuthContext";
 import MemberModal from "../components/MemberModal";
 import PaymentModal from "../components/PaymentModal";
+import DeleteModal from "../components/DeleteModal";
 import { exportToCSV, formatCurrency } from "../utils/helpers";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  faEye,
+  faPencil,
+  faCreditCard,
+  faTrash,
+} from "@fortawesome/free-solid-svg-icons";
 
 const API_URL = "http://127.0.0.1:8080/api";
 
@@ -14,7 +22,9 @@ const Members = () => {
   const [showMemberModal, setShowMemberModal] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedMember, setSelectedMember] = useState(null);
+  const [memberToDelete, setMemberToDelete] = useState(null);
   const [filters, setFilters] = useState({
     academicYear: "",
     hasPaid: "",
@@ -30,12 +40,6 @@ const Members = () => {
   const canUpdatePayment = ["Admin", "Treasurer", "Secretary"].includes(
     user?.role,
   );
-  // Add this line
-  console.log("Modals state:", {
-    showMemberModal,
-    showPaymentModal,
-    showDetailsModal,
-  });
 
   useEffect(() => {
     fetchMembers();
@@ -109,19 +113,23 @@ const Members = () => {
     }
   };
 
-  const handleDeleteMember = async (memberId) => {
-    if (window.confirm("Are you sure you want to delete this member?")) {
-      try {
-        await axios.delete(`${API_URL}/members/${memberId}`);
-        setMessage({ type: "success", text: "Member deleted successfully!" });
-        fetchMembers();
-        setTimeout(() => setMessage({ type: "", text: "" }), 3000);
-      } catch (error) {
-        setMessage({
-          type: "error",
-          text: error.response?.data?.message || "Failed to delete member",
-        });
-      }
+  const handleDeleteMember = async () => {
+    if (!memberToDelete) return;
+
+    try {
+      await axios.delete(`${API_URL}/members/${memberToDelete._id}`);
+      setMessage({ type: "success", text: "Member deleted successfully!" });
+      fetchMembers();
+      setShowDeleteModal(false);
+      setMemberToDelete(null);
+      setTimeout(() => setMessage({ type: "", text: "" }), 3000);
+    } catch (error) {
+      setMessage({
+        type: "error",
+        text: error.response?.data?.message || "Failed to delete member",
+      });
+      setShowDeleteModal(false);
+      setMemberToDelete(null);
     }
   };
 
@@ -288,45 +296,52 @@ const Members = () => {
                     <td>
                       <div className="actions">
                         <button
-                          className="btn btn-sm btn-secondary"
+                          className="btn btn-sm btn-icon btn-secondary"
                           onClick={() => {
                             setSelectedMember(member);
                             setShowDetailsModal(true);
                           }}
+                          title="View Details"
                         >
-                          View
+                          <FontAwesomeIcon icon={faEye} />
                         </button>
 
                         {canEditMember && (
                           <button
-                            className="btn btn-sm btn-primary"
+                            className="btn btn-sm btn-icon btn-primary"
                             onClick={() => {
                               setSelectedMember(member);
                               setShowMemberModal(true);
                             }}
+                            title="Edit Member"
                           >
-                            Edit
+                            <FontAwesomeIcon icon={faPencil} />
                           </button>
                         )}
 
                         {canUpdatePayment && (
                           <button
-                            className="btn btn-sm btn-success"
+                            className="btn btn-sm btn-icon btn-success"
                             onClick={() => {
                               setSelectedMember(member);
                               setShowPaymentModal(true);
                             }}
+                            title="Update Payment"
                           >
-                            Payment
+                            <FontAwesomeIcon icon={faCreditCard} />
                           </button>
                         )}
 
                         {canDeleteMember && (
                           <button
-                            className="btn btn-sm btn-danger"
-                            onClick={() => handleDeleteMember(member._id)}
+                            className="btn btn-sm btn-icon btn-danger"
+                            onClick={() => {
+                              setMemberToDelete(member);
+                              setShowDeleteModal(true);
+                            }}
+                            title="Delete Member"
                           >
-                            Delete
+                            <FontAwesomeIcon icon={faTrash} />
                           </button>
                         )}
                       </div>
@@ -466,6 +481,22 @@ const Members = () => {
           </div>
         </div>
       )}
+
+      {/* Delete Confirmation Modal */}
+      <DeleteModal
+        isOpen={showDeleteModal}
+        onClose={() => {
+          setShowDeleteModal(false);
+          setMemberToDelete(null);
+        }}
+        onConfirm={handleDeleteMember}
+        itemName={
+          memberToDelete
+            ? `${memberToDelete.firstName} ${memberToDelete.lastName}`
+            : ""
+        }
+        itemType="member"
+      />
     </div>
   );
 };
