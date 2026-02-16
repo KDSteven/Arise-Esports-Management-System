@@ -1,41 +1,49 @@
-import React, { useContext, useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { 
-  faChartLine, 
-  faUsers, 
+import React, { useContext, useState } from "react";
+import { Link, useLocation } from "react-router-dom";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  faChartLine,
+  faUsers,
   faUserTie,
   faRightFromBracket,
   faChevronLeft,
-  faChevronRight
-} from '@fortawesome/free-solid-svg-icons';
-import { AuthContext } from '../context/AuthContext';
-import './Sidebar.css';
+  faChevronRight,
+} from "@fortawesome/free-solid-svg-icons";
+import { AuthContext } from "../context/AuthContext";
+import "./Sidebar.css";
+import { useNavigate } from "react-router-dom"; // ← ADD THIS
 
 const Sidebar = () => {
   const { user, logout } = useContext(AuthContext);
+  const navigate = useNavigate(); // ← ADD THIS
   const location = useLocation();
   const [isCollapsed, setIsCollapsed] = useState(false);
 
+  const handleLogout = () => {
+    // ← ADD THIS FUNCTION
+    logout();
+    navigate("/"); // Redirect to landing page
+  };
+
   const menuItems = [
     {
-      path: '/',
+      path: "/dashboard",
       icon: faChartLine,
-      label: 'Dashboard',
-      roles: ['Admin', 'President', 'Treasurer', 'Secretary', 'Auditor']
+      label: "Dashboard",
+      roles: ["Admin", "President", "Treasurer", "Secretary", "Auditor"],
     },
     {
-      path: '/members',
+      path: "/members",
       icon: faUsers,
-      label: 'Members',
-      roles: ['Admin', 'President', 'Treasurer', 'Secretary', 'Auditor']
+      label: "Members",
+      roles: ["Admin", "President", "Treasurer", "Secretary", "Auditor"],
     },
     {
-      path: '/officers',
+      path: "/officers",
       icon: faUserTie,
-      label: 'Officers',
-      roles: ['Admin'] // Only Admin can see this
-    }
+      label: "Officers",
+      roles: ["Admin"], // Only Admin can see this
+    },
   ];
 
   const isActive = (path) => {
@@ -43,25 +51,25 @@ const Sidebar = () => {
   };
 
   // Filter menu items based on user role
-  const visibleMenuItems = menuItems.filter(item => 
-    item.roles.includes(user?.role)
+  const visibleMenuItems = menuItems.filter((item) =>
+    item.roles.includes(user?.role),
   );
 
   return (
-    <div className={`sidebar ${isCollapsed ? 'collapsed' : ''}`}>
+    <div className={`sidebar ${isCollapsed ? "collapsed" : ""}`}>
       <div className="sidebar-header">
-        <img 
-          src="/images/arise-logo.png" 
-          alt="Arise Esports" 
+        <img
+          src="/images/arise-logo.png"
+          alt="Arise Esports"
           className="sidebar-logo"
         />
         {!isCollapsed && <h2>Arise Esports</h2>}
       </div>
 
-      <button 
+      <button
         className="sidebar-toggle"
         onClick={() => setIsCollapsed(!isCollapsed)}
-        title={isCollapsed ? 'Expand' : 'Collapse'}
+        title={isCollapsed ? "Expand" : "Collapse"}
       >
         <FontAwesomeIcon icon={isCollapsed ? faChevronRight : faChevronLeft} />
       </button>
@@ -71,13 +79,15 @@ const Sidebar = () => {
           <Link
             key={item.path}
             to={item.path}
-            className={`sidebar-item ${isActive(item.path) ? 'active' : ''}`}
+            className={`sidebar-item ${isActive(item.path) ? "active" : ""}`}
             title={item.label}
           >
             <span className="sidebar-icon">
               <FontAwesomeIcon icon={item.icon} />
             </span>
-            {!isCollapsed && <span className="sidebar-label">{item.label}</span>}
+            {!isCollapsed && (
+              <span className="sidebar-label">{item.label}</span>
+            )}
           </Link>
         ))}
       </nav>
@@ -96,9 +106,9 @@ const Sidebar = () => {
                 </div>
               )}
             </div>
-            <button 
+            <button
               className="sidebar-logout"
-              onClick={logout}
+              onClick={handleLogout}
               title="Logout"
             >
               <span className="sidebar-icon">
