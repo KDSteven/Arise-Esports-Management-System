@@ -8,16 +8,17 @@ import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import Members from './pages/Members';
 import Officers from './pages/Officers';
+import Events from './pages/Events';
 import './App.css';
 
 // Layout wrapper component
 const AppLayout = ({ children }) => {
   const { user } = useContext(AuthContext);
   const location = useLocation();
-  
+
   // Check if we're on the landing page
   const isLandingPage = location.pathname === '/';
-  
+
   if (!user) {
     // Not logged in
     if (isLandingPage) {
@@ -28,7 +29,7 @@ const AppLayout = ({ children }) => {
       return <div className="App">{children}</div>;
     }
   }
-  
+
   // Logged in - show sidebar
   return (
     <div className="app-layout">
@@ -49,33 +50,41 @@ function App() {
             {/* Public Routes */}
             <Route path="/" element={<LandingPage />} />
             <Route path="/login" element={<Login />} />
-            
+
             {/* Private Routes */}
-            <Route 
-              path="/dashboard" 
+            <Route
+              path="/dashboard"
               element={
                 <PrivateRoute>
                   <Dashboard />
                 </PrivateRoute>
-              } 
+              }
             />
-            <Route 
-              path="/members" 
+            <Route
+              path="/members"
               element={
                 <PrivateRoute>
                   <Members />
                 </PrivateRoute>
-              } 
+              }
             />
-            <Route 
-              path="/officers" 
+            <Route
+              path="/officers"
               element={
                 <PrivateRoute>
                   <Officers />
                 </PrivateRoute>
-              } 
+              }
             />
-            
+            <Route
+              path="/events"
+              element={
+                <PrivateRoute>
+                  <Events />
+                </PrivateRoute>
+              }
+            />
+
             <Route path="*" element={<Navigate to="/" />} />
           </Routes>
         </AppLayout>

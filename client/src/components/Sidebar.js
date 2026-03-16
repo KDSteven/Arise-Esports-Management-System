@@ -5,6 +5,7 @@ import {
   faChartLine,
   faUsers,
   faUserTie,
+  faCalendarDays,
   faRightFromBracket,
   faChevronLeft,
   faChevronRight,
@@ -43,6 +44,12 @@ const Sidebar = () => {
       icon: faUserTie,
       label: "Officers",
       roles: ["Admin"], // Only Admin can see this
+    },
+    {
+      path: "/events",
+      icon: faCalendarDays,
+      label: "Events",
+      roles: ["Admin", "President"],
     },
   ];
 
