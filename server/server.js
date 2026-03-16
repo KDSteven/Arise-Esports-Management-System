@@ -3,10 +3,14 @@ const express = require('express');
 const cors = require('cors');
 const connectDB = require('./config/db');
 
+const { startEventReminderScheduler } = require('./utils/eventReminder');
 const app = express();
 
 // Connect to MongoDB
 connectDB();
+
+// Start event reminder scheduler
+startEventReminderScheduler();
 
 // Middleware
 app.use(cors({
@@ -27,6 +31,8 @@ app.use((req, res, next) => {
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/members', require('./routes/members'));
 app.use('/api/officers', require('./routes/officers'));
+app.use('/api/events', require('./routes/events'));
+app.use('/api/ai', require('./routes/ai'));
 
 // Error handling middleware
 app.use((err, req, res, next) => {
