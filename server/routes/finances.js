@@ -113,3 +113,37 @@ router.delete('/transactions/:id', auth, canWrite, async (req, res) => {
 });
 
 module.exports = router;
+
+// ── Monthly Summary (Admin only) ──────────────────────────────────────────────
+router.get('/monthly-summary', auth, canView, async (req, res) => {
+  try {
+    const year  = new Date().getFullYear();
+    const start = new Date(year, 0, 1);
+    const end   = new Date(year + 1, 0, 1);
+    const MONTH_NAMES = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+    const agg = await Transaction.aggregate([
+      { $match: { date: { $gte: start, $lt: end } } },
+      { $group: { _id: { month: { $month: '$date' }, type: '$type' }, total: { $sum: '$amount' } } }
+    ]);
+
+    const map = {};
+    agg.forEach(({ _id, total }) => {
+      if (!map[_id.month]) map[_id.month] = { income: 0, expense: 0 };
+      if (_id.type === 'Income')  map[_id.month].income  = total;
+      if (_id.type === 'Expense') map[_id.month].expense = total;
+    });
+
+    const result = MONTH_NAMES.map((name, i) => ({
+      month:   name,
+      income:  map[i + 1]?.income  || 0,
+      expense: map[i + 1]?.expense || 0,
+    }));
+
+    res.json(result);
+  } catch (err) {
+    res.status(500).json({ message: 'Server error', error: err.message });
+  }
+});
+
+module.exports = router;
