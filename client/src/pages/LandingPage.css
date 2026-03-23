@@ -187,7 +187,7 @@
 }
 
 #root .landing-page .stats-section {
-  padding: 80px 20px;
+  padding: 80px 0;
   background: linear-gradient(180deg, #0a0a0f 0%, #16213e 100%);
 }
 
@@ -234,7 +234,7 @@
 }
 
 #root .landing-page .about-section {
-  padding: 100px 20px;
+  padding: 100px 0;
   background: #0a0a0f;
 }
 
@@ -313,7 +313,7 @@
 }
 
 #root .landing-page .games-section {
-  padding: 100px 20px;
+  padding: 100px 0;
   background: linear-gradient(180deg, #0a0a0f 0%, #16213e 100%);
 }
 
@@ -359,7 +359,7 @@
 }
 
 #root .landing-page .events-section {
-  padding: 100px 20px;
+  padding: 100px 0;
   background: #0a0a0f;
 }
 
@@ -433,7 +433,7 @@
 }
 
 #root .landing-page .achievements-section {
-  padding: 100px 20px;
+  padding: 100px 0;
   background: linear-gradient(180deg, #0a0a0f 0%, #16213e 100%);
 }
 
@@ -541,7 +541,7 @@
 }
 
 #root .landing-page .partners-section {
-  padding: 100px 20px;
+  padding: 100px 0;
   background: #0a0a0f;
 }
 
@@ -603,13 +603,6 @@
   box-shadow: 0 10px 30px rgba(51, 102, 255, 0.2);
 }
 
-#root .landing-page .partner-logo {
-  width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
 #root .landing-page .partner-placeholder {
   text-align: center;
 }
@@ -636,7 +629,7 @@
 }
 
 #root .landing-page .final-cta-section {
-  padding: 120px 20px;
+  padding: 120px 0;
   background: linear-gradient(135deg, #3366FF 0%, #6B2FBF 100%);
   text-align: center;
 }
@@ -678,7 +671,7 @@
 
 #root .landing-page .footer {
   background: #0a0a0f;
-  padding: 60px 20px 30px;
+  padding: 60px 0 30px;
   border-top: 1px solid rgba(51, 102, 255, 0.2);
 }
 
@@ -770,6 +763,7 @@
   max-width: 1400px;
   margin: 0 auto;
   padding: 0 20px;
+  min-height: unset;
 }
 
 /* Animations - Renamed to avoid conflicts */
