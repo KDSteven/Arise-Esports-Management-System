@@ -52,7 +52,7 @@ const menuGroups = [
 
 const Sidebar = () => {
   const { user, logout } = useContext(AuthContext);
-  const { academicYear, changeAcademicYear, yearOptions } = useContext(FiscalYearContext);
+  const { academicYear, changeAcademicYear, yearOptions, currentSemester, changeSemester, semesterOptions } = useContext(FiscalYearContext);
   const navigate = useNavigate();
   const location = useLocation();
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -112,7 +112,7 @@ const Sidebar = () => {
         })}
       </nav>
 
-      {/* Academic Year */}
+      {/* Academic Year & Semester */}
       <div className="sidebar-year">
         <div className="sidebar-year-label">Academic Year</div>
         {isCollapsed ? (
@@ -127,6 +127,23 @@ const Sidebar = () => {
           >
             {yearOptions.map(y => (
               <option key={y} value={y}>{y}</option>
+            ))}
+          </select>
+        )}
+
+        <div className="sidebar-year-label" style={{ marginTop: '8px' }}>Semester</div>
+        {isCollapsed ? (
+          <div className="sidebar-year-icon" title={`${currentSemester} Semester`}>
+            S{currentSemester === '1st' ? '1' : '2'}
+          </div>
+        ) : (
+          <select
+            className="sidebar-year-select"
+            value={currentSemester}
+            onChange={e => changeSemester(e.target.value)}
+          >
+            {semesterOptions.map(s => (
+              <option key={s} value={s}>{s} Semester</option>
             ))}
           </select>
         )}

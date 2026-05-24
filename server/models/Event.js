@@ -31,7 +31,11 @@ const eventSchema = new mongoose.Schema({
   attendees: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Member'
-  }]
+  }],
+  semester: {
+    type: String,
+    enum: ['1st', '2nd'],
+  }
 }, {
   timestamps: true
 });

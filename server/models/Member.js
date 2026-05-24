@@ -52,6 +52,20 @@ const memberSchema = new mongoose.Schema({
     type: Number,
     default: 0
   },
+  sem1: {
+    hasPaid:     { type: Boolean, default: false },
+    paymentDate: { type: Date,    default: null  },
+    amountPaid:  { type: Number,  default: 0     }
+  },
+  sem2: {
+    hasPaid:     { type: Boolean, default: false },
+    paymentDate: { type: Date,    default: null  },
+    amountPaid:  { type: Number,  default: 0     }
+  },
+  registrationSemester: {
+    type: String,
+    enum: ['1st', '2nd'],
+  },
   status: {
     type: String,
     enum: ['Pending', 'Official Member', 'Rejected'],
@@ -69,7 +83,7 @@ const memberSchema = new mongoose.Schema({
   timestamps: true
 });
 
-memberSchema.index({ academicYear: 1, hasPaid: 1 });
-memberSchema.index({ studentId: 1 });
+memberSchema.index({ academicYear: 1, 'sem1.hasPaid': 1 });
+memberSchema.index({ academicYear: 1, 'sem2.hasPaid': 1 });
 
 module.exports = mongoose.model('Member', memberSchema);

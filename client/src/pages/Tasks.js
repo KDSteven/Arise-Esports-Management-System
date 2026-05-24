@@ -49,7 +49,7 @@ const getInitials = (name) => name ? name.charAt(0).toUpperCase() : '?';
 
 const Tasks = () => {
   const { user } = useContext(AuthContext);
-  const { academicYear } = useContext(FiscalYearContext);
+  const { academicYear, currentSemester } = useContext(FiscalYearContext);
   const { showToast } = useToast();
 
   const isManager = ['Admin', 'President'].includes(user?.role);
@@ -78,9 +78,12 @@ const Tasks = () => {
   const fetchTasks = useCallback(async () => {
     try {
       setLoading(true);
-      const params = { academicYear };
-      if (filterStatus)   params.status   = filterStatus;
-      if (filterPriority) params.priority  = filterPriority;
+      const params = {
+        academicYear,
+        semester: currentSemester === '2nd' ? '2nd' : '1st',
+      };
+      if (filterStatus)   params.status    = filterStatus;
+      if (filterPriority) params.priority   = filterPriority;
       if (filterAssignee) params.assignedTo = filterAssignee;
       const res = await axios.get(`${API_URL}/tasks`, { params });
       setTasks(res.data);
@@ -89,7 +92,7 @@ const Tasks = () => {
     } finally {
       setLoading(false);
     }
-  }, [academicYear, filterStatus, filterPriority, filterAssignee, showToast]);
+  }, [academicYear, currentSemester, filterStatus, filterPriority, filterAssignee, showToast]);
 
   const fetchOfficers = useCallback(async () => {
     try {
@@ -142,7 +145,7 @@ const Tasks = () => {
     if (isManager && !formData.assignedTo) return showToast('warning', 'Please select an assignee.');
     setSaving(true);
     try {
-      const payload = { ...formData, academicYear };
+      const payload = { ...formData, academicYear, semester: currentSemester };
       if (editTask) {
         await axios.put(`${API_URL}/tasks/${editTask._id}`, payload);
         showToast('success', 'Task updated.');

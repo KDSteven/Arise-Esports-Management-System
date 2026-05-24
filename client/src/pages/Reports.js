@@ -50,7 +50,7 @@ function pdfHeader(doc, title) {
   return 40;
 }
 
-function exportMembersPDF(members, stats) {
+function exportMembersPDF(members, stats, semKey) {
   const doc = new jsPDF('p', 'mm', 'a4');
   let y = pdfHeader(doc, 'Member Report');
   doc.setFontSize(9);
@@ -64,8 +64,8 @@ function exportMembersPDF(members, stats) {
       `${m.lastName}, ${m.firstName}`,
       m.course,
       m.yearLevel,
-      m.status,
-      m.hasPaid ? 'Paid' : 'Unpaid',
+      m.status === 'Rejected' ? 'Rejected' : m[semKey]?.hasPaid ? 'Official Member' : 'Pending',
+      m[semKey]?.hasPaid ? 'Paid' : 'Unpaid',
     ]),
     styles: { fontSize: 8 },
     headStyles: { fillColor: [51, 102, 255] },
@@ -389,7 +389,7 @@ function downloadCSV(headers, rows, filename) {
 
 // ── Main Component ─────────────────────────────────────────────────────────────
 const Reports = () => {
-  const { academicYear } = useContext(FiscalYearContext);
+  const { academicYear, currentSemester } = useContext(FiscalYearContext);
   const [activeTab, setActiveTab] = useState('members');
   const [loading, setLoading] = useState(false);
   const { showToast } = useToast();
@@ -438,10 +438,11 @@ const Reports = () => {
 
   const showMessage = (type, text) => showToast(type, text);
 
-  const fetchMembers = async (year) => {
+  const fetchMembers = async (year, sem) => {
     try {
       setLoading(true);
-      const res = await axios.get(`${API_URL}/reports/members?academicYear=${year}`);
+      const semParam = (sem || currentSemester) === '2nd' ? '2' : '1';
+      const res = await axios.get(`${API_URL}/reports/members?academicYear=${year}&semester=${semParam}`);
       setMemberData(res.data);
     } catch (err) {
       showMessage('error', err.response?.data?.message || 'Failed to load member data.');
@@ -570,6 +571,11 @@ const Reports = () => {
     if (activeTab === 'finances')   { loaded.current.finances = true; fetchFinances(academicYear); }
     if (activeTab === 'minutes')    { loaded.current.minutes  = true; fetchMinutes(); }
   }, [academicYear]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Re-fetch members when semester changes
+  useEffect(() => {
+    if (loaded.current.members) fetchMembers(academicYear);
+  }, [currentSemester]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Venue helpers ──────────────────────────────────────────────────────────
   const buildVenueString = (type, building, room) => {
@@ -749,11 +755,12 @@ const Reports = () => {
   };
 
   // ── Filtered data ──────────────────────────────────────────────────────────
+  const semKey = currentSemester === '2nd' ? 'sem2' : 'sem1';
   const filteredMembers = memberData.members.filter(m => {
     const matchSearch = !memberSearch ||
       `${m.firstName} ${m.lastName} ${m.studentId}`.toLowerCase().includes(memberSearch.toLowerCase());
     const matchPay = memberPayFilter === 'All' ||
-      (memberPayFilter === 'Paid' ? m.hasPaid : !m.hasPaid);
+      (memberPayFilter === 'Paid' ? m[semKey]?.hasPaid : !m[semKey]?.hasPaid);
     return matchSearch && matchPay;
   });
 
@@ -867,14 +874,14 @@ const Reports = () => {
             <div className="rep-toolbar-right">
               <button className="rep-export-btn rep-export-csv" onClick={() => {
                 downloadCSV(
-                  ['Student ID', 'First Name', 'Last Name', 'Email', 'Course', 'Year Level', 'Academic Year', 'Status', 'Paid'],
-                  filteredMembers.map(m => [m.studentId, m.firstName, m.lastName, m.email, m.course, m.yearLevel, m.academicYear, m.status, m.hasPaid ? 'Yes' : 'No']),
+                  ['Student ID', 'First Name', 'Last Name', 'Email', 'Course', 'Year Level', 'Academic Year', 'Status', `${currentSemester || '1st'} Sem Paid`],
+                  filteredMembers.map(m => [m.studentId, m.firstName, m.lastName, m.email, m.course, m.yearLevel, m.academicYear, m.status === 'Rejected' ? 'Rejected' : m[semKey]?.hasPaid ? 'Official Member' : 'Pending', m[semKey]?.hasPaid ? 'Yes' : 'No']),
                   `members_report_${Date.now()}.csv`
                 );
               }}>
                 <FontAwesomeIcon icon={faFileCsv} /> Export CSV
               </button>
-              <button className="rep-export-btn rep-export-pdf" onClick={() => exportMembersPDF(filteredMembers, memberData.stats)}>
+              <button className="rep-export-btn rep-export-pdf" onClick={() => exportMembersPDF(filteredMembers, memberData.stats, semKey)}>
                 <FontAwesomeIcon icon={faFilePdf} /> Export PDF
               </button>
             </div>
@@ -901,10 +908,10 @@ const Reports = () => {
                       <td>{m.lastName}, {m.firstName}</td>
                       <td>{m.course}</td>
                       <td>{m.yearLevel}</td>
-                      <td>{m.status}</td>
+                      <td>{m.status === 'Rejected' ? 'Rejected' : m[semKey]?.hasPaid ? 'Official Member' : 'Pending'}</td>
                       <td>
-                        <span className={`rep-badge ${m.hasPaid ? 'rep-paid' : 'rep-unpaid'}`}>
-                          {m.hasPaid ? 'Paid' : 'Unpaid'}
+                        <span className={`rep-badge ${m[semKey]?.hasPaid ? 'rep-paid' : 'rep-unpaid'}`}>
+                          {m[semKey]?.hasPaid ? 'Paid' : 'Unpaid'}
                         </span>
                       </td>
                     </tr>

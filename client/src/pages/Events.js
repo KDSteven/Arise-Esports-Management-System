@@ -41,7 +41,7 @@ function smartDate(academicYear) {
 }
 
 const Events = () => {
-  const { academicYear } = useContext(FiscalYearContext);
+  const { academicYear, currentSemester } = useContext(FiscalYearContext);
   const { user } = useContext(AuthContext);
   const canMarkAttendance = ['Admin', 'President', 'Secretary'].includes(user?.role);
 
@@ -70,11 +70,11 @@ const Events = () => {
   const [suggestions, setSuggestions] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(true);
 
-  useEffect(() => { fetchEvents(); fetchSuggestions(); }, [academicYear]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { fetchEvents(); fetchSuggestions(); }, [academicYear, currentSemester]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const fetchEvents = async () => {
     try {
-      const res = await axios.get(`${API_URL}/events?academicYear=${academicYear}`);
+      const res = await axios.get(`${API_URL}/events?academicYear=${academicYear}&semester=${currentSemester}`);
       setEvents(res.data);
     } catch (err) {
       showMessage('error', err.response?.data?.message || 'Failed to load events');
@@ -157,7 +157,10 @@ const Events = () => {
     setAttLoading(true);
     setShowAttendanceModal(true);
     try {
-      const res = await axios.get(`${API_URL}/members?status=Official Member&academicYear=${academicYear}`);
+      const semParam = currentSemester === '2nd' ? '2' : '1';
+      const res = await axios.get(
+        `${API_URL}/members?hasPaid=true&semester=${semParam}&status=Official Member&academicYear=${academicYear}`
+      );
       setAllMembers(res.data);
       // Pre-check saved attendees
       const saved = new Set((ev.attendees || []).map(id => String(id)));
@@ -195,7 +198,7 @@ const Events = () => {
 
   const openAddModal = () => {
     setSelectedEvent(null);
-    setFormData({ ...emptyForm, date: smartDate(academicYear) });
+    setFormData({ ...emptyForm, date: smartDate(academicYear), semester: currentSemester });
     setShowModal(true);
   };
 
@@ -207,6 +210,7 @@ const Events = () => {
       venue: ev.venue,
       description: ev.description || '',
       status: ev.status,
+      semester: ev.semester || currentSemester,
     });
     setShowModal(true);
   };

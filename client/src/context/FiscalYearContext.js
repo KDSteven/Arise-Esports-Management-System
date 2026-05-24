@@ -25,9 +25,19 @@ export function generateYearOptions() {
   return options;
 }
 
+function getDefaultSemester() {
+  const mo = new Date().getMonth() + 1; // 1-indexed
+  // Aug–Dec = 1st Semester; Jan–Jul = 2nd Semester
+  return mo >= 8 ? '1st' : '2nd';
+}
+
 export const FiscalYearProvider = ({ children }) => {
   const [academicYear, setAcademicYear] = useState(() => {
     return localStorage.getItem('arise_academic_year') || getDefaultAcademicYear();
+  });
+
+  const [currentSemester, setCurrentSemester] = useState(() => {
+    return localStorage.getItem('arise_semester') || getDefaultSemester();
   });
 
   const changeAcademicYear = (year) => {
@@ -35,8 +45,16 @@ export const FiscalYearProvider = ({ children }) => {
     setAcademicYear(year);
   };
 
+  const changeSemester = (sem) => {
+    localStorage.setItem('arise_semester', sem);
+    setCurrentSemester(sem);
+  };
+
   return (
-    <FiscalYearContext.Provider value={{ academicYear, changeAcademicYear, yearOptions: generateYearOptions() }}>
+    <FiscalYearContext.Provider value={{
+      academicYear, changeAcademicYear, yearOptions: generateYearOptions(),
+      currentSemester, changeSemester, semesterOptions: ['1st', '2nd'],
+    }}>
       {children}
     </FiscalYearContext.Provider>
   );

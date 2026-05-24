@@ -43,6 +43,10 @@ const taskSchema = new mongoose.Schema(
       type: Date,
       default: null,
     },
+    semester: {
+      type: String,
+      enum: ['1st', '2nd'],
+    },
   },
   { timestamps: true }
 );

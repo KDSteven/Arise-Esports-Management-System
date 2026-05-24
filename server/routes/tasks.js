@@ -18,8 +18,10 @@ async function getLinkedDirEntry(userId) {
 // @access  Admin, President
 router.get('/stats', auth, canManage, async (req, res) => {
   try {
-    const { academicYear } = req.query;
-    const match = academicYear ? { academicYear } : {};
+    const { academicYear, semester } = req.query;
+    const match = {};
+    if (academicYear) match.academicYear = academicYear;
+    if (semester)     match.semester     = semester;
 
     const [byStatus, byPriority] = await Promise.all([
       Task.aggregate([
@@ -43,13 +45,14 @@ router.get('/stats', auth, canManage, async (req, res) => {
 // @access  All authenticated users
 router.get('/', auth, async (req, res) => {
   try {
-    const { academicYear, status, priority, assignedTo } = req.query;
+    const { academicYear, status, priority, assignedTo, semester } = req.query;
     const isManager = ['Admin', 'President'].includes(req.user.role);
 
     const query = {};
     if (academicYear) query.academicYear = academicYear;
-    if (status) query.status = status;
-    if (priority) query.priority = priority;
+    if (semester)     query.semester     = semester;
+    if (status)       query.status       = status;
+    if (priority)     query.priority     = priority;
 
     if (isManager) {
       if (assignedTo) query.assignedTo = assignedTo;
@@ -80,7 +83,7 @@ router.get('/', auth, async (req, res) => {
 // @access  Admin, President
 router.post('/', auth, canManage, async (req, res) => {
   try {
-    const { title, description, priority, status, assignedTo, dueDate, academicYear } = req.body;
+    const { title, description, priority, status, assignedTo, dueDate, academicYear, semester } = req.body;
 
     if (!title || !assignedTo || !academicYear) {
       return res.status(400).json({ message: 'Title, assignee, and academic year are required.' });
@@ -95,6 +98,7 @@ router.post('/', auth, canManage, async (req, res) => {
       assignedBy: req.user._id,
       dueDate: dueDate || null,
       academicYear,
+      semester,
       completedAt: status === 'Done' ? new Date() : null,
     });
 

@@ -20,11 +20,12 @@ function fyDateRange(academicYear) {
 // ── Member Report ─────────────────────────────────────────────────────────────
 router.get('/members', auth, canAccess, async (req, res) => {
   try {
-    const { academicYear } = req.query;
+    const { academicYear, semester } = req.query;
+    const semKey = semester === '2' ? 'sem2' : 'sem1';
     const query = academicYear ? { academicYear } : {};
     const members = await Member.find(query).sort({ lastName: 1 });
     const total = members.length;
-    const paid = members.filter(m => m.hasPaid).length;
+    const paid = members.filter(m => m[semKey]?.hasPaid).length;
     const unpaid = total - paid;
     const byYearLevel = {};
     members.forEach(m => {

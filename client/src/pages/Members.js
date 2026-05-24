@@ -51,7 +51,7 @@ const API_URL = process.env.REACT_APP_API_URL || 'http://127.0.0.1:8080/api';
 
 const Members = () => {
   const { user } = useContext(AuthContext);
-  const { academicYear: globalYear } = useContext(FiscalYearContext);
+  const { academicYear: globalYear, currentSemester } = useContext(FiscalYearContext);
   const [members, setMembers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showMemberModal, setShowMemberModal] = useState(false);
@@ -89,7 +89,7 @@ const Members = () => {
 
   useEffect(() => {
     fetchMembers();
-  }, [filters]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [filters, currentSemester]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const fetchMembers = async () => {
     try {
@@ -99,6 +99,7 @@ const Members = () => {
       if (filters.hasPaid !== "") params.append("hasPaid", filters.hasPaid);
       if (filters.status) params.append("status", filters.status);
       if (filters.search) params.append("search", filters.search);
+      params.append("semester", currentSemester === '2nd' ? '2' : '1');
 
       const res = await axios.get(`${API_URL}/members?${params}`);
       setMembers(res.data);
@@ -111,7 +112,7 @@ const Members = () => {
 
   const handleAddMember = async (memberData) => {
     try {
-      await axios.post(`${API_URL}/members`, memberData);
+      await axios.post(`${API_URL}/members`, { ...memberData, registrationSemester: currentSemester });
       showToast("success", "Member added successfully!");
       fetchMembers();
       setShowMemberModal(false);
@@ -136,7 +137,7 @@ const Members = () => {
     try {
       await axios.put(
         `${API_URL}/members/${selectedMember._id}/payment`,
-        paymentData,
+        { ...paymentData, semester: currentSemester === '2nd' ? '2' : '1' },
       );
       showToast("success", "Payment updated successfully!");
       fetchMembers();
@@ -192,6 +193,7 @@ const Members = () => {
   };
 
   const handleDownloadList = () => {
+    const semKey = currentSemester === '2nd' ? 'sem2' : 'sem1';
     const csvData = members.map((member) => ({
       "Student ID": member.studentId,
       "First Name": member.firstName,
@@ -201,11 +203,17 @@ const Members = () => {
       Course: member.course,
       "Year Level": member.yearLevel,
       "Academic Year": member.academicYear,
-      Status: member.status,
-      "Has Paid": member.hasPaid ? "Yes" : "No",
-      "Amount Paid": member.amountPaid || 0,
-      "Payment Date": member.paymentDate
-        ? new Date(member.paymentDate).toLocaleDateString()
+      Status: member.status === 'Rejected' ? 'Rejected'
+        : member[semKey]?.hasPaid ? 'Official Member' : 'Pending',
+      "Sem 1 Paid": member.sem1?.hasPaid ? "Yes" : "No",
+      "Sem 1 Amount": member.sem1?.amountPaid || 0,
+      "Sem 1 Payment Date": member.sem1?.paymentDate
+        ? new Date(member.sem1.paymentDate).toLocaleDateString()
+        : "",
+      "Sem 2 Paid": member.sem2?.hasPaid ? "Yes" : "No",
+      "Sem 2 Amount": member.sem2?.amountPaid || 0,
+      "Sem 2 Payment Date": member.sem2?.paymentDate
+        ? new Date(member.sem2.paymentDate).toLocaleDateString()
         : "",
       Remarks: member.remarks || "",
     }));
@@ -332,24 +340,32 @@ const Members = () => {
                     <td>{member.course}</td>
                     <td>{member.yearLevel}</td>
                     <td>
-                      <span
-                        className={`badge badge-${
-                          member.status === "Official Member"
-                            ? "success"
-                            : member.status === "Pending"
-                              ? "warning"
-                              : "danger"
-                        }`}
-                      >
-                        {member.status}
-                      </span>
+                      {(() => {
+                        const semKey = currentSemester === '2nd' ? 'sem2' : 'sem1';
+                        const effectiveStatus = member.status === 'Rejected'
+                          ? 'Rejected'
+                          : member[semKey]?.hasPaid ? 'Official Member' : 'Pending';
+                        return (
+                          <span className={`badge badge-${
+                            effectiveStatus === 'Official Member' ? 'success'
+                            : effectiveStatus === 'Pending' ? 'warning'
+                            : 'danger'
+                          }`}>
+                            {effectiveStatus}
+                          </span>
+                        );
+                      })()}
                     </td>
                     <td>
-                      <span
-                        className={`badge badge-${member.hasPaid ? "success" : "danger"}`}
-                      >
-                        {member.hasPaid ? "Paid" : "Unpaid"}
-                      </span>
+                      {(() => {
+                        const semKey = currentSemester === '2nd' ? 'sem2' : 'sem1';
+                        const isSemPaid = member[semKey]?.hasPaid;
+                        return (
+                          <span className={`badge badge-${isSemPaid ? "success" : "danger"}`}>
+                            {isSemPaid ? "Paid" : "Unpaid"}
+                          </span>
+                        );
+                      })()}
                     </td>
                     <td>
                       <div className="actions">
@@ -431,6 +447,7 @@ const Members = () => {
         <PaymentModal
           isOpen={showPaymentModal}
           member={selectedMember}
+          currentSemester={currentSemester}
           onClose={() => {
             setShowPaymentModal(false);
             setSelectedMember(null);
@@ -488,41 +505,45 @@ const Members = () => {
               </div>
               <div className="detail-row">
                 <strong>Status:</strong>
-                <span
-                  className={`badge badge-${
-                    selectedMember.status === "Official Member"
-                      ? "success"
-                      : selectedMember.status === "Pending"
-                        ? "warning"
-                        : "danger"
-                  }`}
-                >
-                  {selectedMember.status}
-                </span>
+                {(() => {
+                  const semKey = currentSemester === '2nd' ? 'sem2' : 'sem1';
+                  const effectiveStatus = selectedMember.status === 'Rejected'
+                    ? 'Rejected'
+                    : selectedMember[semKey]?.hasPaid ? 'Official Member' : 'Pending';
+                  return (
+                    <span className={`badge badge-${
+                      effectiveStatus === 'Official Member' ? 'success'
+                      : effectiveStatus === 'Pending' ? 'warning'
+                      : 'danger'
+                    }`}>
+                      {effectiveStatus}
+                    </span>
+                  );
+                })()}
               </div>
               <div className="detail-row">
-                <strong>Payment Status:</strong>
-                <span
-                  className={`badge badge-${selectedMember.hasPaid ? "success" : "danger"}`}
-                >
-                  {selectedMember.hasPaid ? "Paid" : "Unpaid"}
+                <strong>1st Sem Payment:</strong>
+                <span className={`badge badge-${selectedMember.sem1?.hasPaid ? "success" : "danger"}`}>
+                  {selectedMember.sem1?.hasPaid ? `Paid — ${formatCurrency(selectedMember.sem1.amountPaid)}` : "Unpaid"}
                 </span>
               </div>
-              {selectedMember.hasPaid && (
-                <>
-                  <div className="detail-row">
-                    <strong>Amount Paid:</strong>
-                    <span>{formatCurrency(selectedMember.amountPaid)}</span>
-                  </div>
-                  <div className="detail-row">
-                    <strong>Payment Date:</strong>
-                    <span>
-                      {new Date(
-                        selectedMember.paymentDate,
-                      ).toLocaleDateString()}
-                    </span>
-                  </div>
-                </>
+              {selectedMember.sem1?.hasPaid && (
+                <div className="detail-row">
+                  <strong>1st Sem Date:</strong>
+                  <span>{new Date(selectedMember.sem1.paymentDate).toLocaleDateString()}</span>
+                </div>
+              )}
+              <div className="detail-row">
+                <strong>2nd Sem Payment:</strong>
+                <span className={`badge badge-${selectedMember.sem2?.hasPaid ? "success" : "danger"}`}>
+                  {selectedMember.sem2?.hasPaid ? `Paid — ${formatCurrency(selectedMember.sem2.amountPaid)}` : "Unpaid"}
+                </span>
+              </div>
+              {selectedMember.sem2?.hasPaid && (
+                <div className="detail-row">
+                  <strong>2nd Sem Date:</strong>
+                  <span>{new Date(selectedMember.sem2.paymentDate).toLocaleDateString()}</span>
+                </div>
               )}
               {selectedMember.remarks && (
                 <div className="detail-row">
@@ -565,8 +586,11 @@ const Members = () => {
               <h2>Import Preview — {importRows.length} row{importRows.length !== 1 ? "s" : ""}</h2>
               <button className="close-btn" onClick={() => setShowImportModal(false)}>×</button>
             </div>
-            <p style={{ fontSize: "0.85rem", color: "#636e72", margin: "0 0 14px" }}>
+            <p style={{ fontSize: "0.85rem", color: "#636e72", margin: "0 0 6px" }}>
               Rows highlighted in red are missing required fields or have invalid year levels and will be skipped.
+            </p>
+            <p style={{ fontSize: "0.82rem", color: "#b45309", margin: "0 0 14px" }}>
+              The <strong>hasPaid</strong> column is applied to the <strong>1st Semester</strong> payment. 2nd semester payments must be recorded manually.
             </p>
             <div style={{ maxHeight: 360, overflowY: "auto", border: "1px solid #e0e0e0", borderRadius: 10, marginBottom: 16 }}>
               <table className="table" style={{ fontSize: "0.78rem" }}>

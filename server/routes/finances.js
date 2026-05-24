@@ -36,10 +36,25 @@ router.get('/summary', auth, canView, async (req, res) => {
       { $group: { _id: null, total: { $sum: '$amount' } } }
     ]);
 
-    const totalIncome  = incomeAgg[0]?.total  || 0;
+    const totalIncome  = incomeAgg[0]?.total || 0;
     const totalExpense = expenseAgg[0]?.total || 0;
 
-    res.json({ totalBudget, totalIncome, totalExpense, balance: totalIncome - totalExpense });
+    // Membership fee breakdown by semester (derived from reference field pattern)
+    const feeMatch = { category: 'Membership Fee', ...txMatch };
+    const [sem1FeeAgg, sem2FeeAgg] = await Promise.all([
+      Transaction.aggregate([
+        { $match: { ...feeMatch, reference: { $regex: /-sem1$/ } } },
+        { $group: { _id: null, total: { $sum: '$amount' } } }
+      ]),
+      Transaction.aggregate([
+        { $match: { ...feeMatch, reference: { $regex: /-sem2$/ } } },
+        { $group: { _id: null, total: { $sum: '$amount' } } }
+      ]),
+    ]);
+    const sem1FeeIncome = sem1FeeAgg[0]?.total || 0;
+    const sem2FeeIncome = sem2FeeAgg[0]?.total || 0;
+
+    res.json({ totalBudget, totalIncome, totalExpense, balance: totalIncome - totalExpense, sem1FeeIncome, sem2FeeIncome });
   } catch (err) {
     res.status(500).json({ message: 'Server error', error: err.message });
   }

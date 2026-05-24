@@ -1,10 +1,14 @@
 import React, { useState } from 'react';
 
-const PaymentModal = ({ isOpen, onClose, onSubmit, member }) => {
+const PaymentModal = ({ isOpen, onClose, onSubmit, member, currentSemester }) => {
+  const semKey = currentSemester === '2nd' ? 'sem2' : 'sem1';
+  const semData = member?.[semKey] || {};
   const [paymentData, setPaymentData] = useState({
-    hasPaid: member?.hasPaid || false,
-    amountPaid: member?.amountPaid || 0,
-    paymentDate: member?.paymentDate ? new Date(member.paymentDate).toISOString().split('T')[0] : new Date().toISOString().split('T')[0]
+    hasPaid:     semData.hasPaid     ?? false,
+    amountPaid:  semData.amountPaid  ?? 0,
+    paymentDate: semData.paymentDate
+      ? new Date(semData.paymentDate).toISOString().split('T')[0]
+      : new Date().toISOString().split('T')[0],
   });
 
   const handleChange = (e) => {
@@ -26,7 +30,12 @@ const PaymentModal = ({ isOpen, onClose, onSubmit, member }) => {
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
-          <h2>Update Payment Status</h2>
+          <div>
+            <h2>Update Payment Status</h2>
+            <p style={{ fontSize: '0.8rem', color: '#6b7280', margin: '2px 0 0' }}>
+              {currentSemester || '1st'} Semester
+            </p>
+          </div>
           <button className="close-btn" onClick={onClose}>&times;</button>
         </div>
         <form onSubmit={handleSubmit}>

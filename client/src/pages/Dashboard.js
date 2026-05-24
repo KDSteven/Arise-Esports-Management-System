@@ -39,7 +39,7 @@ const CustomTooltip = ({ active, payload, label }) => {
 
 const Dashboard = () => {
   const { user } = useContext(AuthContext);
-  const { academicYear } = useContext(FiscalYearContext);
+  const { academicYear, currentSemester } = useContext(FiscalYearContext);
   const navigate = useNavigate();
   const canViewFinance  = ['Admin', 'Treasurer', 'Auditor'].includes(user?.role);
   const canViewInsights = ['Admin', 'President'].includes(user?.role);
@@ -50,7 +50,7 @@ const Dashboard = () => {
   const [monthlyData, setMonthlyData] = useState([]);
   const [retention, setRetention]     = useState(null);
 
-  useEffect(() => { fetchStats(); }, [academicYear]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { fetchStats(); }, [academicYear, currentSemester]); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => { if (canViewFinance)  fetchFinanceData(); }, [academicYear, canViewFinance]);  // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => { if (canViewInsights) fetchRetention();   }, [academicYear, canViewInsights]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -62,7 +62,8 @@ const Dashboard = () => {
   const fetchStats = async () => {
     try {
       setLoading(true);
-      const res = await axios.get(`${API_URL}/members/stats/summary?academicYear=${academicYear}`);
+      const semParam = currentSemester === '2nd' ? '2' : '1';
+      const res = await axios.get(`${API_URL}/members/stats/summary?academicYear=${academicYear}&semester=${semParam}`);
       setStats(res.data);
     } catch (err) {
       console.error('Error fetching stats:', err);

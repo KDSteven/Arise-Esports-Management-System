@@ -108,6 +108,58 @@
   margin-top: 2px;
 }
 
+/* ── Membership Fee Breakdown ── */
+.fin-fee-breakdown {
+  background: #fff;
+  border-radius: 14px;
+  padding: 14px 22px;
+  margin-bottom: 24px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.07);
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+.fin-fee-breakdown-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+}
+.fin-fee-breakdown-items {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.fin-fee-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.fin-fee-sem {
+  font-size: 0.8rem;
+  color: #64748b;
+}
+.fin-fee-total-label {
+  font-weight: 700;
+  color: #1e293b;
+}
+.fin-fee-amount {
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+.fin-fee-sem1  { color: #3366FF; }
+.fin-fee-sem2  { color: #7c3aed; }
+.fin-fee-total { color: #059669; }
+.fin-fee-divider {
+  width: 1px;
+  height: 20px;
+  background: #e2e8f0;
+}
+
 /* ── Main Layout ── */
 .fin-layout {
   display: grid;

@@ -34,7 +34,7 @@ const Finances = () => {
   const { academicYear } = useContext(FiscalYearContext);
   const canWrite = user?.role === 'Admin' || user?.role === 'Treasurer';
 
-  const [summary, setSummary]           = useState({ totalBudget: 0, totalIncome: 0, totalExpense: 0, balance: 0 });
+  const [summary, setSummary]           = useState({ totalBudget: 0, totalIncome: 0, totalExpense: 0, balance: 0, sem1FeeIncome: 0, sem2FeeIncome: 0 });
   const [budgets, setBudgets]           = useState([]);
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading]           = useState(true);
@@ -199,6 +199,27 @@ const Finances = () => {
           <div>
             <div className="fin-summary-label">Net Balance</div>
             <div className="fin-summary-value">{fmt(summary.balance)}</div>
+          </div>
+        </div>
+      </div>
+
+      {/* ── Membership Fee Breakdown ── */}
+      <div className="fin-fee-breakdown">
+        <div className="fin-fee-breakdown-label">Membership Fee Collection</div>
+        <div className="fin-fee-breakdown-items">
+          <div className="fin-fee-item">
+            <span className="fin-fee-sem">1st Semester</span>
+            <span className="fin-fee-amount fin-fee-sem1">{fmt(summary.sem1FeeIncome)}</span>
+          </div>
+          <div className="fin-fee-divider" />
+          <div className="fin-fee-item">
+            <span className="fin-fee-sem">2nd Semester</span>
+            <span className="fin-fee-amount fin-fee-sem2">{fmt(summary.sem2FeeIncome)}</span>
+          </div>
+          <div className="fin-fee-divider" />
+          <div className="fin-fee-item">
+            <span className="fin-fee-sem fin-fee-total-label">Total Collected</span>
+            <span className="fin-fee-amount fin-fee-total">{fmt((summary.sem1FeeIncome || 0) + (summary.sem2FeeIncome || 0))}</span>
           </div>
         </div>
       </div>

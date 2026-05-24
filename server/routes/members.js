@@ -12,19 +12,26 @@ const logActivity = require('../utils/activityLogger');
 // @access  Private
 router.get('/', auth, async (req, res) => {
   try {
-    const { academicYear, hasPaid, status, search } = req.query;
-    
+    const { academicYear, hasPaid, status, search, semester } = req.query;
+
     // Build query
     let query = {};
-    
+
     if (academicYear) {
       query.academicYear = academicYear;
     }
-    
+
     if (hasPaid !== undefined) {
-      query.hasPaid = hasPaid === 'true';
+      const semKey = semester === '2' ? 'sem2.hasPaid' : 'sem1.hasPaid';
+      query[semKey] = hasPaid === 'true';
     }
-    
+
+    // 1st semester view: only show members who registered in 1st semester.
+    // 2nd semester view: show all members (1st + 2nd semester registrants).
+    if (semester === '1') {
+      query.registrationSemester = '1st';
+    }
+
     if (status) {
       query.status = status;
     }
@@ -130,7 +137,7 @@ router.post(
         return res.status(400).json({ errors: errors.array() });
       }
 
-      const { studentId, firstName, lastName, email, phoneNumber, course, yearLevel, academicYear } = req.body;
+      const { studentId, firstName, lastName, email, phoneNumber, course, yearLevel, academicYear, registrationSemester } = req.body;
 
       // Check if student ID already exists
       let existingMember = await Member.findOne({ studentId });
@@ -147,7 +154,8 @@ router.post(
         phoneNumber,
         course,
         yearLevel,
-        academicYear
+        academicYear,
+        registrationSemester: registrationSemester || '1st',
       });
 
       await member.save();
@@ -207,26 +215,40 @@ router.put('/:id', auth, checkRoles('Admin', 'Secretary'), async (req, res) => {
 // @access  Private
 router.put('/:id/payment', auth, async (req, res) => {
   try {
-    const { hasPaid, amountPaid, paymentDate } = req.body;
+    const { hasPaid, amountPaid, paymentDate, semester } = req.body;
+    const sem = semester === '2' ? 'sem2' : 'sem1';
+    const semLabel = sem === 'sem2' ? '2nd Sem' : '1st Sem';
 
     let member = await Member.findById(req.params.id);
-    
+
     if (!member) {
       return res.status(404).json({ message: 'Member not found' });
     }
 
-    const wasAlreadyPaid = member.hasPaid;
+    const wasAlreadyPaid = member[sem].hasPaid;
 
-    // Update payment info
-    member.hasPaid = hasPaid;
+    member[sem].hasPaid = hasPaid;
     if (hasPaid) {
-      member.amountPaid = amountPaid || 0;
-      member.paymentDate = paymentDate || new Date();
-      member.status = 'Official Member';
+      member[sem].amountPaid  = amountPaid || 0;
+      member[sem].paymentDate = paymentDate || new Date();
+      // Never promote a rejected member — rejection is set explicitly by admin
+      if (member.status !== 'Rejected') {
+        member.status = 'Official Member';
+      }
     } else {
-      member.amountPaid = 0;
-      member.paymentDate = null;
-      member.status = 'Pending';
+      member[sem].amountPaid  = 0;
+      member[sem].paymentDate = null;
+      // Revert to Pending only when both semesters are unpaid and not rejected
+      if (!member.sem1.hasPaid && !member.sem2.hasPaid && member.status !== 'Rejected') {
+        member.status = 'Pending';
+      }
+    }
+
+    // Mirror sem1 into flat fields for backward compatibility
+    if (sem === 'sem1') {
+      member.hasPaid     = member.sem1.hasPaid;
+      member.amountPaid  = member.sem1.amountPaid;
+      member.paymentDate = member.sem1.paymentDate;
     }
 
     await member.save();
@@ -235,20 +257,21 @@ router.put('/:id/payment', auth, async (req, res) => {
     // Use a date that falls within the member's own academic year so the
     // transaction is attributed to the correct year regardless of when the
     // payment is recorded in the system.
-    if (hasPaid && !wasAlreadyPaid && member.amountPaid > 0) {
+    const semRef = `${member.studentId}-${sem}`;
+    if (hasPaid && !wasAlreadyPaid && member[sem].amountPaid > 0) {
       const [startYr] = member.academicYear.split('-').map(Number);
-      const ayStart = new Date(startYr, 7, 1);          // Aug 1 of start year
-      const ayEnd   = new Date(startYr + 1, 7, 1);      // Aug 1 of end year
-      const pd      = new Date(member.paymentDate);
+      const ayStart = new Date(startYr, 7, 1);
+      const ayEnd   = new Date(startYr + 1, 7, 1);
+      const pd      = new Date(member[sem].paymentDate);
       const txDate  = (pd >= ayStart && pd < ayEnd) ? pd : ayStart;
 
       await Transaction.create({
         type: 'Income',
         category: 'Membership Fee',
-        amount: member.amountPaid,
-        description: `Membership fee — ${member.firstName} ${member.lastName} (${member.studentId})`,
+        amount: member[sem].amountPaid,
+        description: `Membership fee (${semLabel}) — ${member.firstName} ${member.lastName} (${member.studentId})`,
         date: txDate,
-        reference: member.studentId,
+        reference: semRef,
         createdBy: req.user._id,
       });
     }
@@ -257,19 +280,19 @@ router.put('/:id/payment', auth, async (req, res) => {
     if (!hasPaid && wasAlreadyPaid) {
       await Transaction.deleteOne({
         category: 'Membership Fee',
-        reference: member.studentId,
+        reference: semRef,
       });
     }
 
     if (hasPaid && !wasAlreadyPaid) {
       await logActivity(req.user._id, 'PAYMENT', 'Members',
-        `Marked ${member.firstName} ${member.lastName} (${member.studentId}) as paid — ₱${member.amountPaid}`,
-        { memberId: member._id, amount: member.amountPaid }
+        `Marked ${member.firstName} ${member.lastName} (${member.studentId}) as paid (${semLabel}) — ₱${member[sem].amountPaid}`,
+        { memberId: member._id, amount: member[sem].amountPaid, semester: sem }
       );
     } else if (!hasPaid && wasAlreadyPaid) {
       await logActivity(req.user._id, 'PAYMENT', 'Members',
-        `Reversed payment for ${member.firstName} ${member.lastName} (${member.studentId})`,
-        { memberId: member._id }
+        `Reversed payment (${semLabel}) for ${member.firstName} ${member.lastName} (${member.studentId})`,
+        { memberId: member._id, semester: sem }
       );
     }
 
@@ -342,23 +365,25 @@ router.delete('/:id', auth, checkRoles('Admin'), async (req, res) => {
 // @access  Private
 router.get('/stats/summary', auth, async (req, res) => {
   try {
-    const { academicYear } = req.query;
-    
+    const { academicYear, semester } = req.query;
+    const sem       = semester === '2' ? 'sem2' : 'sem1';
+    const semPaidKey = `${sem}.hasPaid`;
+    const semAmtKey  = `${sem}.amountPaid`;
+
     let query = {};
-    if (academicYear) {
-      query.academicYear = academicYear;
-    }
+    if (academicYear) query.academicYear = academicYear;
+    if (semester === '1') query.registrationSemester = '1st';
 
-    const totalMembers = await Member.countDocuments(query);
-    const paidMembers = await Member.countDocuments({ ...query, hasPaid: true });
-    const unpaidMembers = await Member.countDocuments({ ...query, hasPaid: false });
-    const officialMembers = await Member.countDocuments({ ...query, status: 'Official Member' });
-    const pendingMembers = await Member.countDocuments({ ...query, status: 'Pending' });
+    const totalMembers    = await Member.countDocuments(query);
+    const paidMembers     = await Member.countDocuments({ ...query, [semPaidKey]: true  });
+    const unpaidMembers   = await Member.countDocuments({ ...query, [semPaidKey]: false });
+    // Official = paid for this semester and not rejected; Pending = unpaid and not rejected
+    const officialMembers = await Member.countDocuments({ ...query, [semPaidKey]: true,  status: { $ne: 'Rejected' } });
+    const pendingMembers  = await Member.countDocuments({ ...query, [semPaidKey]: false, status: { $ne: 'Rejected' } });
 
-    // Calculate total revenue
     const revenueResult = await Member.aggregate([
       { $match: query },
-      { $group: { _id: null, total: { $sum: '$amountPaid' } } }
+      { $group: { _id: null, total: { $sum: `$${semAmtKey}` } } }
     ]);
     const totalRevenue = revenueResult.length > 0 ? revenueResult[0].total : 0;
 
@@ -410,18 +435,25 @@ router.post('/bulk-import', auth, checkRoles('Admin', 'Secretary'), async (req, 
           skipped++;
           continue;
         }
+        const importedPaid = m.hasPaid === 'true' || m.hasPaid === true;
+        const VALID_SEMESTERS = ['1st', '2nd'];
         await Member.create({
-          studentId:    m.studentId,
-          firstName:    m.firstName,
-          lastName:     m.lastName,
-          email:        m.email,
-          phoneNumber:  m.phoneNumber || '',
-          course:       m.course,
-          yearLevel:    m.yearLevel,
-          academicYear: m.academicYear,
-          hasPaid:      m.hasPaid === 'true' || m.hasPaid === true,
-          status:       VALID_STATUSES.includes(m.status) ? m.status : 'Pending',
-          remarks:      m.remarks || '',
+          studentId:            m.studentId,
+          firstName:            m.firstName,
+          lastName:             m.lastName,
+          email:                m.email,
+          phoneNumber:          m.phoneNumber || '',
+          course:               m.course,
+          yearLevel:            m.yearLevel,
+          academicYear:         m.academicYear,
+          registrationSemester: VALID_SEMESTERS.includes(m.registrationSemester) ? m.registrationSemester : '1st',
+          hasPaid:              importedPaid,
+          sem1: { hasPaid: importedPaid, amountPaid: 0, paymentDate: null },
+          sem2: { hasPaid: false,        amountPaid: 0, paymentDate: null },
+          status: importedPaid
+            ? 'Official Member'
+            : (VALID_STATUSES.includes(m.status) ? m.status : 'Pending'),
+          remarks: m.remarks || '',
         });
         created++;
       } catch (err) {

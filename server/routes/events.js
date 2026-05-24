@@ -16,9 +16,10 @@ function fyDateRange(academicYear) {
 // GET all events (sorted by date)
 router.get('/', auth, adminOrPresident, async (req, res) => {
   try {
-    const { academicYear } = req.query;
+    const { academicYear, semester } = req.query;
     const range = fyDateRange(academicYear);
     const query = range ? { date: { $gte: range.start, $lt: range.end } } : {};
+    if (semester) query.semester = semester;
     const events = await Event.find(query).sort({ date: 1 });
     res.json(events);
   } catch (err) {
@@ -29,13 +30,14 @@ router.get('/', auth, adminOrPresident, async (req, res) => {
 // POST create event
 router.post('/', auth, adminOrPresident, async (req, res) => {
   try {
-    const { title, date, venue, description, status } = req.body;
+    const { title, date, venue, description, status, semester } = req.body;
     const event = new Event({
       title,
       date,
       venue,
       description,
       status,
+      semester,
       createdBy: req.user.id
     });
     await event.save();
