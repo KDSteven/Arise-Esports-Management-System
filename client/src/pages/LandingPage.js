@@ -309,13 +309,13 @@ const LandingPage = () => {
             <div className="achievement-photo-card">
               <div className="achievement-image">
                 <div className="achievement-placeholder">
-                  <span>🎯</span>
-                  <p>Achievement Photo 3</p>
+                  <img src="/images/anilag-mlbb.jpg" alt="Achievement 3" />
+                    <p>Achievement Photo 3</p>
                 </div>
               </div>
               <div className="achievement-overlay">
-                <h3>Qualified</h3>
-                <p>National Championships</p>
+                <h3>MLBB 2ND RUNNER UP</h3>
+                <p>Anilag Festival</p>
               </div>
             </div>
             <div className="achievement-photo-card">

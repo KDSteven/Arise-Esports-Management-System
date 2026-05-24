@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="2480" height="1754" viewBox="0 0 2480 1754">
+  <!-- Background -->
+  <rect width="2480" height="1754" fill="#fff8f0"/>
+  <!-- Outer border -->
+  <rect x="40" y="40" width="2400" height="1674" fill="none" stroke="#b8902a" stroke-width="12"/>
+  <!-- Inner border -->
+  <rect x="70" y="70" width="2340" height="1614" fill="none" stroke="#d4af37" stroke-width="4"/>
+  <!-- Decorative corner TL -->
+  <rect x="55" y="55" width="60" height="4" fill="#b8902a"/>
+  <rect x="55" y="55" width="4" height="60" fill="#b8902a"/>
+  <!-- Decorative corner TR -->
+  <rect x="2365" y="55" width="60" height="4" fill="#b8902a"/>
+  <rect x="2421" y="55" width="4" height="60" fill="#b8902a"/>
+  <!-- Decorative corner BL -->
+  <rect x="55" y="1695" width="60" height="4" fill="#b8902a"/>
+  <rect x="55" y="1639" width="4" height="60" fill="#b8902a"/>
+  <!-- Decorative corner BR -->
+  <rect x="2365" y="1695" width="60" height="4" fill="#b8902a"/>
+  <rect x="2421" y="1639" width="4" height="60" fill="#b8902a"/>
+  <!-- Top accent line -->
+  <line x1="400" y1="200" x2="2080" y2="200" stroke="#d4af37" stroke-width="2"/>
+  <line x1="400" y1="210" x2="2080" y2="210" stroke="#d4af37" stroke-width="1" stroke-dasharray="8,6"/>
+  <!-- "Certificate of" text area placeholder -->
+  <text x="1240" y="340" font-family="Georgia,serif" font-size="72" fill="#c8a020" text-anchor="middle" letter-spacing="8">CERTIFICATE</text>
+  <text x="1240" y="420" font-family="Georgia,serif" font-size="44" fill="#b8902a" text-anchor="middle" letter-spacing="6">of Recognition</text>
+  <!-- Divider -->
+  <line x1="600" y1="480" x2="1880" y2="480" stroke="#d4af37" stroke-width="2"/>
+  <!-- "This certifies that" placeholder -->
+  <text x="1240" y="590" font-family="Georgia,serif" font-size="38" fill="#888" text-anchor="middle" font-style="italic">This certifies that</text>
+  <!-- Name area (blank) -->
+  <line x1="500" y1="780" x2="1980" y2="780" stroke="#b8902a" stroke-width="3"/>
+  <text x="1240" y="840" font-family="Georgia,serif" font-size="32" fill="#aaa" text-anchor="middle" font-style="italic">(Recipient Name)</text>
+  <!-- Purpose placeholder -->
+  <text x="1240" y="960" font-family="Georgia,serif" font-size="36" fill="#888" text-anchor="middle" font-style="italic">for (purpose text)</text>
+  <!-- Bottom divider -->
+  <line x1="400" y1="1100" x2="2080" y2="1100" stroke="#d4af37" stroke-width="2"/>
+  <line x1="400" y1="1110" x2="2080" y2="1110" stroke="#d4af37" stroke-width="1" stroke-dasharray="8,6"/>
+  <!-- Signature area left -->
+  <line x1="300" y1="1450" x2="900" y2="1450" stroke="#666" stroke-width="2"/>
+  <text x="600" y="1490" font-family="Georgia,serif" font-size="28" fill="#888" text-anchor="middle">Date</text>
+  <!-- Signature area right (e-sign placement) -->
+  <line x1="1580" y1="1450" x2="2180" y2="1450" stroke="#666" stroke-width="2"/>
+  <text x="1880" y="1490" font-family="Georgia,serif" font-size="28" fill="#888" text-anchor="middle">Authorized Signatory</text>
+  <!-- Org name placeholder -->
+  <text x="1240" y="1620" font-family="Georgia,serif" font-size="32" fill="#b8902a" text-anchor="middle" letter-spacing="4">ARISE ESPORTS · CITY COLLEGE OF CALAMBA</text>
+</svg>

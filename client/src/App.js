@@ -16,6 +16,7 @@ import Reports from './pages/Reports';
 import ActivityLogs from './pages/ActivityLogs';
 import Tasks from './pages/Tasks';
 import Database from './pages/Database';
+import Certificates from './pages/Certificates';
 import './App.css';
 
 // Layout wrapper component
@@ -99,6 +100,7 @@ function App() {
             <Route path="/activity-logs" element={<PrivateRoute><ActivityLogs /></PrivateRoute>} />
             <Route path="/tasks" element={<PrivateRoute><Tasks /></PrivateRoute>} />
             <Route path="/database" element={<PrivateRoute><Database /></PrivateRoute>} />
+            <Route path="/certificates" element={<PrivateRoute><Certificates /></PrivateRoute>} />
             <Route path="*" element={<Navigate to="/" />} />
           </Routes>
         </AppLayout>

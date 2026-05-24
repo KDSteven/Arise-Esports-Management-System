@@ -9,6 +9,7 @@ import {
   faWallet,
   faFileAlt,
   faListCheck,
+  faCertificate,
   faClockRotateLeft,
   faDatabase,
   faRightFromBracket,
@@ -36,7 +37,8 @@ const menuGroups = [
       { path: "/events",    icon: faCalendarDays, label: "Events",    roles: ["Admin","President"] },
       { path: "/finances",  icon: faWallet,       label: "Finances",  roles: ["Admin","Treasurer","Auditor"] },
       { path: "/reports",   icon: faFileAlt,      label: "Reports",   roles: ["Admin","Secretary"] },
-      { path: "/tasks",     icon: faListCheck,    label: "Tasks",     roles: ["Admin","President","Treasurer","Secretary","Auditor"] },
+      { path: "/tasks",         icon: faListCheck,    label: "Tasks",         roles: ["Admin","President","Treasurer","Secretary","Auditor"] },
+      { path: "/certificates",  icon: faCertificate,  label: "Certificates",  roles: ["Admin","President","Treasurer","Secretary","Auditor"] },
     ],
   },
   {

@@ -6,9 +6,13 @@ server/node_modules/
 # Environment variables
 .env
 server/.env
+client/.env
 
 # Build
 client/build/
+
+# Server backups (runtime data, not source)
+server/backups/
 
 # Logs
 *.log

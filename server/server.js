@@ -46,7 +46,7 @@ app.use(cors({
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'Accept']
 }));
-app.use(express.json());
+app.use(express.json({ limit: '10mb' }));
 app.use((req, _res, next) => { sanitizeBody(req.body); next(); });
 
 // Request logging
@@ -65,6 +65,7 @@ app.use('/api/finances', require('./routes/finances'));
 app.use('/api/reports', require('./routes/reports'));
 app.use('/api/officer-directory', require('./routes/officerDirectory'));
 app.use('/api/activity-logs', require('./routes/activityLogs'));
+app.use('/api/certificates', require('./routes/certificates'));
 app.use('/api/tasks', require('./routes/tasks'));
 app.use('/api/database', require('./routes/database'));
 
