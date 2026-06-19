@@ -10,6 +10,7 @@ const COURSES = [
   'BS Secondary Education Major: Mathematics Education',
   'Bachelor of Elementary Education',
   'BS Psychology',
+  'AB in Communication',
 ];
 
 const MemberModal = ({ isOpen, onClose, onSubmit, member, defaultAcademicYear }) => {

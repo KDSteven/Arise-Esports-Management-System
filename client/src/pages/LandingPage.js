@@ -10,6 +10,8 @@ import {
   faUsers,
   faTrophy,
   faArrowRight,
+  faMedal,
+  faFire,
 } from "@fortawesome/free-solid-svg-icons";
 import AOS from 'aos';
 import 'aos/dist/aos.css';
@@ -191,18 +193,22 @@ const LandingPage = () => {
           <p className="stats-eyebrow">◈ &nbsp; Arise Esports &nbsp; ◈</p>
           <div className="stats-grid">
             <div className="stat-item" data-aos="fade-up" data-aos-delay="0">
+              <span className="stat-icon"><FontAwesomeIcon icon={faUsers} /></span>
               <h2 className="stat-number">150+</h2>
               <p className="stat-label">Active Members</p>
             </div>
             <div className="stat-item" data-aos="fade-up" data-aos-delay="100">
+              <span className="stat-icon"><FontAwesomeIcon icon={faTrophy} /></span>
               <h2 className="stat-number">10+</h2>
               <p className="stat-label">Tournaments</p>
             </div>
             <div className="stat-item" data-aos="fade-up" data-aos-delay="200">
+              <span className="stat-icon"><FontAwesomeIcon icon={faMedal} /></span>
               <h2 className="stat-number">10+</h2>
               <p className="stat-label">Victories</p>
             </div>
             <div className="stat-item" data-aos="fade-up" data-aos-delay="300">
+              <span className="stat-icon"><FontAwesomeIcon icon={faFire} /></span>
               <h2 className="stat-number">3+</h2>
               <p className="stat-label">Years Strong</p>
             </div>
@@ -310,7 +316,6 @@ const LandingPage = () => {
               <div className="achievement-image">
                 <div className="achievement-placeholder">
                   <img src="/images/anilag-mlbb.jpg" alt="Achievement 3" />
-                    <p>Achievement Photo 3</p>
                 </div>
               </div>
               <div className="achievement-overlay">
@@ -401,8 +406,12 @@ const LandingPage = () => {
       <section className="events-section" id="events">
         <div className="container">
           <div className="section-header" data-aos="fade-up">
-            <h2 className="section-title">RECENT EVENTS</h2>
+            <h2 className="section-title">FEATURED EVENTS</h2>
             <div className="title-underline"></div>
+            <p className="section-subtitle" data-aos="fade-up" data-aos-delay="100">
+              From high-stakes tournaments to community outreach and nightly gaming sessions —
+              here's a look at what Arise Esports brings to life.
+            </p>
           </div>
           <div className="events-grid" data-aos="fade-up" data-aos-delay="200">
             <div className="event-card">
@@ -414,9 +423,9 @@ const LandingPage = () => {
               </div>
               <div className="event-info">
                 <span className="event-date">January 2024</span>
-                <h3>CCC Esports Tournament 2024</h3>
+                <h3>CCC GAMING EXPO 2024</h3>
                 <p className="event-description">
-                  Annual inter-college tournament featuring top teams from the region.
+                  Campus-wide esports showcase spotlighting competitive play, gaming culture, and the finest talent within our organization.
                 </p>
               </div>
             </div>
@@ -429,9 +438,9 @@ const LandingPage = () => {
               </div>
               <div className="event-info">
                 <span className="event-date">December 2023</span>
-                <h3>ML Championship Series</h3>
+                <h3>COMMUNITY EXTENSION</h3>
                 <p className="event-description">
-                  Intense Mobile Legends competition with teams across the province.
+                  Outreach initiative where Arise goes beyond the campus to serve, connect, and make a difference in surrounding communities.
                 </p>
               </div>
             </div>
@@ -444,9 +453,9 @@ const LandingPage = () => {
               </div>
               <div className="event-info">
                 <span className="event-date">Ongoing</span>
-                <h3>Weekly Practice Sessions</h3>
+                <h3>GAMING NIGHTS</h3>
                 <p className="event-description">
-                  Regular team practice and strategy sessions to improve our gameplay.
+                  Recurring members-only sessions where teammates bond, sharpen their skills, and enjoy the games they love.
                 </p>
               </div>
             </div>

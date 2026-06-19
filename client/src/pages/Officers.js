@@ -477,6 +477,7 @@ const Officers = () => {
                     <option value="BS Secondary Education Major: Mathematics Education">BS Secondary Education Major: Mathematics Education</option>
                     <option value="Bachelor of Elementary Education">Bachelor of Elementary Education</option>
                     <option value="BS Psychology">BS Psychology</option>
+                    <option value="AB in Communication">AB in Communication</option>
                   </select>
                 </div>
                 <div className="off-form-group">

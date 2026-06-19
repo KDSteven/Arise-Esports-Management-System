@@ -284,59 +284,56 @@ html:has(.landing-page) ::-webkit-scrollbar-thumb:hover {
    STATS
 ════════════════════════════════════════ */
 #root .landing-page .stats-section {
-  padding: 70px 0 80px;
-  background: linear-gradient(180deg, #0f0f22 0%, #16213e 100%);
+  background: transparent;
   position: relative;
   z-index: 2;
+  margin-top: -1px;
 }
 
 #root .landing-page .stats-eyebrow {
-  text-align: center;
-  font-size: 0.68rem;
-  font-weight: 800;
-  letter-spacing: 3px;
-  text-transform: uppercase;
-  color: rgba(100, 140, 255, 0.7);
-  margin-bottom: 40px;
+  display: none;
 }
 
 #root .landing-page .stats-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   max-width: 960px;
   margin: 0 auto;
+  padding: 56px 24px;
+  border-top: 1px solid rgba(51, 102, 255, 0.12);
+  border-bottom: 1px solid rgba(51, 102, 255, 0.12);
 }
 
 #root .landing-page .stat-item {
+  flex: 1;
   text-align: center;
-  padding: 32px 20px 28px;
-  border-radius: 16px;
-  border: 1px solid rgba(51, 102, 255, 0.15);
-  /* Gradient top-border accent */
-  background:
-    linear-gradient(#111128, #111128) padding-box,
-    linear-gradient(135deg, #3366FF, #6B2FBF) border-box;
-  border-top: 2px solid transparent;
-  transition: all 0.3s ease;
+  padding: 0 28px;
   position: relative;
-  overflow: hidden;
+  transition: transform 0.3s ease;
 }
 
-/* Subtle inner glow at top */
-#root .landing-page .stat-item::before {
+/* Vertical divider between items */
+#root .landing-page .stat-item + .stat-item::before {
   content: '';
   position: absolute;
-  top: 0; left: 0; right: 0;
-  height: 60px;
-  background: linear-gradient(180deg, rgba(51, 102, 255, 0.08) 0%, transparent 100%);
-  pointer-events: none;
+  left: 0;
+  top: 10%;
+  height: 80%;
+  width: 1px;
+  background: linear-gradient(to bottom, transparent, rgba(51, 102, 255, 0.35), transparent);
 }
 
 #root .landing-page .stat-item:hover {
-  transform: translateY(-6px);
-  border-color: rgba(51, 102, 255, 0.5);
-  box-shadow: 0 12px 40px rgba(51, 102, 255, 0.22);
+  transform: translateY(-4px);
+}
+
+#root .landing-page .stat-icon {
+  font-size: 1.3rem;
+  color: #7aafff;
+  margin-bottom: 12px;
+  filter: drop-shadow(0 0 10px rgba(100, 160, 255, 0.6));
+  display: block;
 }
 
 #root .landing-page .stat-number {
@@ -1042,8 +1039,18 @@ html:has(.landing-page) ::-webkit-scrollbar-thumb:hover {
   }
 
   #root .landing-page .stats-grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 14px;
+    flex-wrap: wrap;
+    padding: 40px 16px;
+  }
+
+  #root .landing-page .stat-item {
+    flex: 0 0 50%;
+    padding: 20px 0;
+  }
+
+  /* Hide vertical dividers on mobile — use horizontal spacing instead */
+  #root .landing-page .stat-item + .stat-item::before {
+    display: none;
   }
 
   #root .landing-page .stat-number {
