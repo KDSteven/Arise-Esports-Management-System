@@ -2,6 +2,7 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
+const path = require('path');
 const connectDB = require('./config/db');
 
 // Strip MongoDB operators ($gt, $where, etc.) from req.body to prevent NoSQL injection
@@ -69,13 +70,22 @@ app.use('/api/certificates', require('./routes/certificates'));
 app.use('/api/tasks', require('./routes/tasks'));
 app.use('/api/database', require('./routes/database'));
 
+// Serve React build — only when SERVE_CLIENT=true (Route 2: Unified on Render)
+// Route 1 (Hybrid) keeps this off so the server stays a pure API
+if (process.env.SERVE_CLIENT === 'true') {
+  app.use(express.static(path.join(__dirname, '../client/build')));
+  app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, '../client/build', 'index.html'));
+  });
+}
+
 // Error handling middleware
 app.use((err, req, res, next) => {
   console.error('Error:', err);
   res.status(500).json({ message: 'Server error', error: err.message });
 });
 
-// Health check route
+// Health check route (only active in non-production / Route 1 hybrid)
 app.get('/', (req, res) => {
   res.json({ message: 'Organization Management API is running' });
 });

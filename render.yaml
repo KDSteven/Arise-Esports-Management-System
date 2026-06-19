@@ -1,20 +1,22 @@
 services:
   - type: web
-    name: arise-backend
+    name: arise-app
     runtime: node
     rootDir: server
-    buildCommand: npm install
+    buildCommand: cd ../client && npm install && npm run build && cd ../server && npm install
     startCommand: npm start
     envVars:
       - key: NODE_ENV
         value: production
       - key: PORT
         value: 8080
+      - key: SERVE_CLIENT
+        value: "true"
+      - key: CLIENT_URL
+        value: ""
       - key: MONGODB_URI
         sync: false
       - key: JWT_SECRET
-        sync: false
-      - key: CLIENT_URL
         sync: false
       - key: EMAIL_USER
         sync: false
