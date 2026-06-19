@@ -74,7 +74,7 @@ app.use('/api/database', require('./routes/database'));
 // Route 1 (Hybrid) keeps this off so the server stays a pure API
 if (process.env.SERVE_CLIENT === 'true') {
   app.use(express.static(path.join(__dirname, '../client/build')));
-  app.get('*', (req, res) => {
+  app.get('(.*)', (req, res) => {
     res.sendFile(path.join(__dirname, '../client/build', 'index.html'));
   });
 }
